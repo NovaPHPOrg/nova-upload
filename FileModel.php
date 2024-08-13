@@ -15,4 +15,6 @@ class FileModel extends Model
     public bool $is_temp = false;
 
     public int $create_time = 0;
+
+    public string $link_id = "";// 关联id
 }
