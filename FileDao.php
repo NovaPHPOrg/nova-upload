@@ -29,7 +29,7 @@ class FileDao extends Dao
         $timeouts = time() - 3600 * 12;// 12 hour
         $files = $this->getAll(null,['is_temp' => true,"create_time < ".$timeouts]);
         /** @var FileModel $file */
-        foreach ($files as $file) {
+        foreach ($files["data"] as $file) {
             if (file_exists($file->path)) unlink($file->path);
         }
         $this->delete()->where(['is_temp' => true,"create_time < ".$timeouts])->commit();
