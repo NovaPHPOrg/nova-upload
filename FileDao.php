@@ -8,8 +8,13 @@ class FileDao extends Dao
 {
     public function useFile($uri_name,$link_id): void
     {
+        if(!is_array($uri_name)){
+            $uri_name = [$uri_name];
+        }
         $this->update()->set(['is_temp'=>true])->where(['link_id' => $link_id])->commit();
-        $this->update()->set(['is_temp'=>false,'link_id'=>$link_id])->where(['uri_name' => $uri_name])->commit();
+        foreach ($uri_name as $name){
+            $this->update()->set(['is_temp'=>false,'link_id'=>$link_id])->where(['uri_name' => $name])->commit();
+        }
     }
 
 
