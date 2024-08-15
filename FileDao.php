@@ -29,6 +29,17 @@ class FileDao extends Dao
         $this->delete()->where(['uri_name' => $uri_name])->commit();
     }
 
+
+    public function removeFiles($link_id): void
+    {
+        $files = $this->getAll(null,['link_id' => $link_id]);
+        /** @var FileModel $file */
+        foreach ($files["data"] as $file) {
+            if (file_exists($file->path)) unlink($file->path);
+        }
+        $this->delete()->where(['link_id' => $link_id])->commit();
+    }
+
     public function removeTempFiles(): void
     {
         $timeouts = time() - 3600 * 12;// 12 hour
