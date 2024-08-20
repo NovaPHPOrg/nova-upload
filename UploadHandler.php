@@ -9,7 +9,7 @@ class UploadHandler {
     private array $allowedTypes;
     private int $maxFileSize;
 
-    public function __construct($uploadDir, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff'], $maxFileSize = 0) {
+    public function __construct($uploadDir = ROOT_PATH.DS."uploads".DS, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff'], $maxFileSize = 0) {
         $this->uploadDir = rtrim($uploadDir, DS) . DS;
         $this->allowedTypes = $allowedTypes;
         $this->maxFileSize = $maxFileSize;
@@ -70,37 +70,58 @@ class UploadHandler {
             // Merge chunks into a single file
             $finalFilePath = $this->mergeChunks($tempDir, $uniqueFileNameExt,$totalChunks);
             Logger::info('Final file path: ' . $finalFilePath);
-            // Get current date for directory structure
-            $year = date('Y');
-            $month = date('m');
-            $day = date('d');
 
-            // Final storage directory
-            $dateDir = $this->uploadDir . $year . '/' . $month . '/' . $day . '/';
-            if (!file_exists($dateDir)) {
-                mkdir($dateDir, 0777, true);
-            }
 
-            // Move the merged file to the final directory
-            $finalPath = $dateDir . $uniqueFileNameExt;
-            rename($finalFilePath, $finalPath);
-
-            // Create file model to return
-            $fileModel = new FileModel();
-            $fileModel->name = $fileName;
-            $fileModel->size = filesize($finalPath);
-            $fileModel->path = $finalPath;
-            $fileModel->extension = pathinfo($fileName, PATHINFO_EXTENSION);
-            $fileModel->uri_name = $year . $month . $day . "-" . $uniqueFileNameExt;
-            $fileModel->is_temp = true;
-            $fileModel->create_time = time();
-            // Clean up temporary files
-            $this->cleanUpTempDir($tempDir);
-
-            return $fileModel;
+            return $this->finalFile($fileName,$tempDir,$finalFilePath,$fileExt);
         } else {
             return null; // Indicate that more chunks are needed
         }
+    }
+
+    private function finalFile($fileName,$tempDir,$finalFilePath,$ext): FileModel
+    {
+        // Get current date for directory structure
+        $year = date('Y');
+        $month = date('m');
+        $day = date('d');
+
+        // Final storage directory
+        $dateDir = $this->uploadDir . $year . '/' . $month . '/' . $day . '/';
+        if (!file_exists($dateDir)) {
+            mkdir($dateDir, 0777, true);
+        }
+
+        // Move the merged file to the final directory
+        $finalPath = $dateDir . $ext;
+        rename($finalFilePath, $finalPath);
+
+        // Create file model to return
+        $fileModel = new FileModel();
+        $fileModel->name = $fileName;
+        $fileModel->size = filesize($finalPath);
+        $fileModel->path = $finalPath;
+        $fileModel->extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $fileModel->uri_name = $year . $month . $day . "-" . $ext;
+        $fileModel->is_temp = true;
+        $fileModel->create_time = time();
+        // Clean up temporary files
+        $this->cleanUpTempDir($tempDir);
+
+        return $fileModel;
+    }
+
+    public function handleFile($content,$ext)
+    {
+        $name = uniqid();
+        $tempDir = $this->uploadDir . 'temp'.DS . $name.DS  ;
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        file_put_contents($tempDir . $name.DS.".$ext", $content);
+
+        return $this->finalFile($name.".$ext",$tempDir,$tempDir . $name.DS.".$ext",$name.".$ext");
+
     }
 
     /**
