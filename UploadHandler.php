@@ -72,13 +72,13 @@ class UploadHandler {
             Logger::info('Final file path: ' . $finalFilePath);
 
 
-            return $this->finalFile($fileName,$tempDir,$finalFilePath,$fileExt);
+            return $this->finalFile($fileName,$tempDir,$finalFilePath,$uniqueFileName,$fileExt);
         } else {
             return null; // Indicate that more chunks are needed
         }
     }
 
-    private function finalFile($fileName,$tempDir,$finalFilePath,$ext): FileModel
+    private function finalFile($fileName,$tempDir,$finalFilePath,$finalName,$ext): FileModel
     {
         // Get current date for directory structure
         $year = date('Y');
@@ -86,13 +86,13 @@ class UploadHandler {
         $day = date('d');
 
         // Final storage directory
-        $dateDir = $this->uploadDir . $year . '/' . $month . '/' . $day . '/';
+        $dateDir = $this->uploadDir . $year . DS . $month . DS . $day . DS;
         if (!file_exists($dateDir)) {
             mkdir($dateDir, 0777, true);
         }
 
         // Move the merged file to the final directory
-        $finalPath = $dateDir . $ext;
+        $finalPath = $dateDir .$finalName.".{$ext}";
         rename($finalFilePath, $finalPath);
 
         // Create file model to return
@@ -100,8 +100,8 @@ class UploadHandler {
         $fileModel->name = $fileName;
         $fileModel->size = filesize($finalPath);
         $fileModel->path = $finalPath;
-        $fileModel->extension = pathinfo($fileName, PATHINFO_EXTENSION);
-        $fileModel->uri_name = $year . $month . $day . "-" . $ext;
+        $fileModel->extension = $ext;
+        $fileModel->uri_name = $year . $month . $day . "-" . $finalName.".{$ext}";
         $fileModel->is_temp = true;
         $fileModel->create_time = time();
         // Clean up temporary files
@@ -110,7 +110,7 @@ class UploadHandler {
         return $fileModel;
     }
 
-    public function handleFile($content,$ext)
+    public function handleFile($content,$ext): FileModel
     {
         $name = uniqid();
         $tempDir = $this->uploadDir . 'temp'.DS . $name.DS  ;
@@ -118,9 +118,12 @@ class UploadHandler {
             mkdir($tempDir, 0777, true);
         }
 
-        file_put_contents($tempDir . $name.DS.".$ext", $content);
+        $filename = "$name.$ext";
+        $filepath = $tempDir . $filename;
 
-        return $this->finalFile($name.".$ext",$tempDir,$tempDir . $name.DS.".$ext",$name.".$ext");
+        file_put_contents($filepath, $content);
+
+        return $this->finalFile($filename,$tempDir,$filepath,$name,$ext);
 
     }
 
