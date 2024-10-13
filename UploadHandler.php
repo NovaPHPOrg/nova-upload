@@ -23,7 +23,7 @@ class UploadHandler {
     /**
      * @throws UploadException
      */
-    public function handleUpload(): ?FileModel
+    public function handleUpload($unique): ?FileModel
     {
         $chunkIndex = Argument::post('chunkIndex', 0);
         $totalChunks = Argument::post('totalChunks', 1);
@@ -49,7 +49,7 @@ class UploadHandler {
         }
 
         $fileExt = pathinfo($fileName, PATHINFO_EXTENSION);
-        $uniqueFileName = uniqid();
+        $uniqueFileName = $unique;
         $uniqueFileNameExt  = $uniqueFileName.".". $fileExt;
 
 
