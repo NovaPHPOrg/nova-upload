@@ -1,6 +1,7 @@
 <?php
 namespace nova\plugin\upload;
 
+use nova\framework\log\File;
 use nova\framework\log\Logger;
 use nova\framework\request\Argument;
 
@@ -14,9 +15,8 @@ class UploadHandler {
         $this->allowedTypes = $allowedTypes;
         $this->maxFileSize = $maxFileSize;
 
-        if (!file_exists($this->uploadDir)) {
-            mkdir($this->uploadDir, 0777, true);
-        }
+        File::mkDir($this->uploadDir);
+
         $this->cleanUpUseLessTempDir();
     }
 
