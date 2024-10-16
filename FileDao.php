@@ -17,6 +17,32 @@ class FileDao extends Dao
         }
     }
 
+    private function extraImage($content, $pattern): array
+    {
+        $filenames = [];
+        if (preg_match_all($pattern, $content, $matches)) {
+            foreach ($matches[1] as $src) {
+                $filename = basename(parse_url($src, PHP_URL_PATH));
+                $filenames[] = $filename;
+            }
+        }
+        return $filenames;
+    }
+
+    public function useMarkdownFile($markdown, $link_id): void
+    {
+        $pattern = '/!\[.*?]\((.*?)\)/';
+        $filenames = $this->extraImage($markdown, $pattern);
+        $this->useFile($filenames, $link_id);
+    }
+
+    public function useHtmlFile($html, $link_id): void
+    {
+        $pattern = '/<img[^>]+src=["\']([^"\']+)["\']/i';
+        $filenames = $this->extraImage($html, $pattern);
+        $this->useFile($filenames, $link_id);
+    }
+
 
     public function removeFile($uri_name): void
     {
