@@ -63,7 +63,7 @@ class UploadHandler {
         // Store the current chunk
         $chunkPath = $tempDir . $chunkIndex;
         move_uploaded_file($_FILES['file']['tmp_name'], $chunkPath);
-
+        Logger::info("Chunk saved: $chunkPath");
         // Check if all chunks are uploaded
         if ($chunkIndex + 1 === $totalChunks) {
             Logger::info('All chunks uploaded');
@@ -146,7 +146,7 @@ class UploadHandler {
                 fclose($chunkFile);
             } else {
                 fclose($outputFile);
-                throw new UploadException('缺少文件块，无法完成上传');
+                throw new UploadException('缺少文件块' . $chunkFilePath . '，无法完成上传');
             }
         }
 

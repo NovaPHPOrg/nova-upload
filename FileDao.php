@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace nova\plugin\upload;
 
+use nova\framework\log\File;
 use nova\plugin\orm\object\Dao;
 
 class FileDao extends Dao
@@ -62,7 +63,7 @@ class FileDao extends Dao
         $files = $this->getAll(null,['link_id' => $link_id]);
         /** @var FileModel $file */
         foreach ($files["data"] as $file) {
-            if (file_exists($file->path)) unlink($file->path);
+            File::del($file->path);
         }
         $this->delete()->where(['link_id' => $link_id])->commit();
     }
@@ -73,7 +74,7 @@ class FileDao extends Dao
         $files = $this->getAll(null,['is_temp' => true,"create_time < ".$timeouts]);
         /** @var FileModel $file */
         foreach ($files["data"] as $file) {
-            if (file_exists($file->path)) unlink($file->path);
+            File::del($file->path);
         }
         $this->delete()->where(['is_temp' => true,"create_time < ".$timeouts])->commit();
     }
