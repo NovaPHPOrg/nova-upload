@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace nova\plugin\upload;
@@ -9,17 +10,17 @@ use nova\plugin\orm\object\Dao;
 
 class FileDao extends Dao
 {
-    public function useFile($uri_name,$link_id): void
+    public function useFile($uri_name, $link_id): void
     {
-        if(!is_array($uri_name)){
+        if (!is_array($uri_name)) {
             $uri_name = [$uri_name];
         }
-        $this->update()->set(['is_temp'=>true])->where(['link_id' => $link_id])->commit();
-        foreach ($uri_name as $name){
+        $this->update()->set(['is_temp' => true])->where(['link_id' => $link_id])->commit();
+        foreach ($uri_name as $name) {
             if (empty($name)) {
                 continue;
             }
-            $this->update()->set(['is_temp'=>false,'link_id'=>$link_id])->where(['uri_name' => $name])->commit();
+            $this->update()->set(['is_temp' => false,'link_id' => $link_id])->where(['uri_name' => $name])->commit();
         }
     }
 
@@ -59,7 +60,6 @@ class FileDao extends Dao
         $this->useFile($filenames, $link_id);
     }
 
-
     public function removeFile($uri_name): void
     {
 
@@ -69,9 +69,11 @@ class FileDao extends Dao
         /**
          * @var FileModel $file
          */
-        $file  = $this->find(null,['uri_name' => $uri_name]);
+        $file  = $this->find(null, ['uri_name' => $uri_name]);
 
-        if (empty($file->link_id)) return;
+        if (empty($file->link_id)) {
+            return;
+        }
 
         if ($file && file_exists($file->path)) {
             //Logger::info("删除文件(removeFile)".print_r($file,true).":".$file->path);
@@ -81,13 +83,12 @@ class FileDao extends Dao
         Logger::info(print_r(debug_backtrace(), true));
     }
 
-
     public function removeFiles($link_id): void
     {
         if (empty($link_id)) {
             return;
         }
-        $files = $this->getAll(null,['link_id' => $link_id]);
+        $files = $this->getAll(null, ['link_id' => $link_id]);
         /** @var FileModel $file */
         foreach ($files["data"] as $file) {
             if (empty($file->uri_name)) {
@@ -103,7 +104,7 @@ class FileDao extends Dao
     public function removeTempFiles(): void
     {
         $timeouts = time() - 3600 * 12;//- 3600 * 12;// 12 hour
-        $files = $this->getAll(null,['is_temp' => true,"create_time < ".$timeouts]);
+        $files = $this->getAll(null, ['is_temp' => true,"create_time < ".$timeouts]);
         /** @var FileModel $file */
         foreach ($files["data"] as $file) {
             File::del($file->path);

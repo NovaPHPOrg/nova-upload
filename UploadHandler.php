@@ -1,19 +1,21 @@
 <?php
+
 declare(strict_types=1);
+
 namespace nova\plugin\upload;
-
-
 
 use nova\framework\core\Context;
 use nova\framework\core\File;
 use nova\framework\core\Logger;
 
-class UploadHandler {
+class UploadHandler
+{
     private string $uploadDir;
     private array $allowedTypes;
     private int $maxFileSize;
 
-    public function __construct($uploadDir = ROOT_PATH.DS."uploads".DS, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff'], $maxFileSize = 0) {
+    public function __construct($uploadDir = ROOT_PATH.DS."uploads".DS, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff'], $maxFileSize = 0)
+    {
         $this->uploadDir = rtrim($uploadDir, DS) . DS;
         $this->allowedTypes = $allowedTypes;
         $this->maxFileSize = $maxFileSize;
@@ -58,7 +60,6 @@ class UploadHandler {
         $uniqueFileName = $unique;
         $uniqueFileNameExt  = $uniqueFileName.".". $fileExt;
 
-
         // Directory for storing temporary chunks
         $tempDir = $this->uploadDir . 'temp'.DS . $uniqueFileName.DS  ;
         if (!file_exists($tempDir)) {
@@ -74,17 +75,16 @@ class UploadHandler {
             Logger::info('All chunks uploaded');
 
             // Merge chunks into a single file
-            $finalFilePath = $this->mergeChunks($tempDir, $uniqueFileNameExt,$totalChunks);
+            $finalFilePath = $this->mergeChunks($tempDir, $uniqueFileNameExt, $totalChunks);
             Logger::info('Final file path: ' . $finalFilePath);
 
-
-            return $this->finalFile($fileName,$tempDir,$finalFilePath,$uniqueFileName,$fileExt);
+            return $this->finalFile($fileName, $tempDir, $finalFilePath, $uniqueFileName, $fileExt);
         } else {
             return null; // Indicate that more chunks are needed
         }
     }
 
-    private function finalFile($fileName,$tempDir,$finalFilePath,$finalName,$ext): FileModel
+    private function finalFile($fileName, $tempDir, $finalFilePath, $finalName, $ext): FileModel
     {
         // Get current date for directory structure
         $year = date('Y');
@@ -116,7 +116,7 @@ class UploadHandler {
         return $fileModel;
     }
 
-    public function handleFile($content,$ext): FileModel
+    public function handleFile($content, $ext): FileModel
     {
         $name = uniqid();
         $tempDir = $this->uploadDir . 'temp'.DS . $name.DS  ;
@@ -129,7 +129,7 @@ class UploadHandler {
 
         file_put_contents($filepath, $content);
 
-        return $this->finalFile($filename,$tempDir,$filepath,$name,$ext);
+        return $this->finalFile($filename, $tempDir, $filepath, $name, $ext);
 
     }
 
@@ -137,7 +137,7 @@ class UploadHandler {
      * Merges all chunks into a single file.
      * @throws UploadException
      */
-    private function mergeChunks(string $tempDir, string $finalFileName,int $total): string
+    private function mergeChunks(string $tempDir, string $finalFileName, int $total): string
     {
         $finalFilePath = $tempDir . $finalFileName;
         $outputFile = fopen($finalFilePath, 'wb');
@@ -161,7 +161,7 @@ class UploadHandler {
     public function cleanUpUseLessTempDir(): void
     {
         $tempDir = $this->uploadDir . 'temp'.DS;
-        if(!is_dir($tempDir)){
+        if (!is_dir($tempDir)) {
             return;
         }
         $expiryHours = 24;
@@ -192,11 +192,11 @@ class UploadHandler {
         rmdir($tempDir);
     }
 
-
     /**
      * @throws UploadException
      */
-    private function handleFileUploadError($errorCode) {
+    private function handleFileUploadError($errorCode)
+    {
         throw match ($errorCode) {
             UPLOAD_ERR_INI_SIZE => new UploadException('上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值'),
             UPLOAD_ERR_FORM_SIZE => new UploadException('上传的文件超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值'),
