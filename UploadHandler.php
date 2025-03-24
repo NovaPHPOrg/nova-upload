@@ -1,29 +1,19 @@
 <?php
-
-/*
- * Copyright (c) 2025. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
- * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
- * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
- * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
- * Vestibulum commodo. Ut rhoncus gravida arcu.
- */
-
 declare(strict_types=1);
-
 namespace nova\plugin\upload;
 
-use nova\framework\log\File;
-use nova\framework\log\Logger;
-use nova\framework\request\Argument;
 
-class UploadHandler
-{
+
+use nova\framework\core\Context;
+use nova\framework\core\File;
+use nova\framework\core\Logger;
+
+class UploadHandler {
     private string $uploadDir;
     private array $allowedTypes;
     private int $maxFileSize;
 
-    public function __construct($uploadDir = ROOT_PATH.DS."uploads".DS, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff'], $maxFileSize = 0)
-    {
+    public function __construct($uploadDir = ROOT_PATH.DS."uploads".DS, $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff'], $maxFileSize = 0) {
         $this->uploadDir = rtrim($uploadDir, DS) . DS;
         $this->allowedTypes = $allowedTypes;
         $this->maxFileSize = $maxFileSize;
@@ -38,9 +28,12 @@ class UploadHandler
      */
     public function handleUpload($unique): ?FileModel
     {
-        $chunkIndex = Argument::post('chunkIndex', 0);
-        $totalChunks = Argument::post('totalChunks', 1);
-        $fileName = Argument::post('fileName', '');
+
+        $request = Context::instance()->request();
+
+        $chunkIndex = $request->post('chunkIndex', 0);
+        $totalChunks = $request->post('totalChunks', 1);
+        $fileName = $request->post('fileName', '');
 
         Logger::info('chunkIndex: ' . $chunkIndex);
         Logger::info('totalChunks: ' . $totalChunks);
@@ -65,6 +58,7 @@ class UploadHandler
         $uniqueFileName = $unique;
         $uniqueFileNameExt  = $uniqueFileName.".". $fileExt;
 
+
         // Directory for storing temporary chunks
         $tempDir = $this->uploadDir . 'temp'.DS . $uniqueFileName.DS  ;
         if (!file_exists($tempDir)) {
@@ -73,23 +67,24 @@ class UploadHandler
 
         // Store the current chunk
         $chunkPath = $tempDir . $chunkIndex;
-        move_uploaded_file($_FILES['file']['tmp_name'], $chunkPath);
+        copy($_FILES['file']['tmp_name'], $chunkPath);
         Logger::info("Chunk saved: $chunkPath");
         // Check if all chunks are uploaded
         if ($chunkIndex + 1 === $totalChunks) {
             Logger::info('All chunks uploaded');
 
             // Merge chunks into a single file
-            $finalFilePath = $this->mergeChunks($tempDir, $uniqueFileNameExt, $totalChunks);
+            $finalFilePath = $this->mergeChunks($tempDir, $uniqueFileNameExt,$totalChunks);
             Logger::info('Final file path: ' . $finalFilePath);
 
-            return $this->finalFile($fileName, $tempDir, $finalFilePath, $uniqueFileName, $fileExt);
+
+            return $this->finalFile($fileName,$tempDir,$finalFilePath,$uniqueFileName,$fileExt);
         } else {
             return null; // Indicate that more chunks are needed
         }
     }
 
-    private function finalFile($fileName, $tempDir, $finalFilePath, $finalName, $ext): FileModel
+    private function finalFile($fileName,$tempDir,$finalFilePath,$finalName,$ext): FileModel
     {
         // Get current date for directory structure
         $year = date('Y');
@@ -121,7 +116,7 @@ class UploadHandler
         return $fileModel;
     }
 
-    public function handleFile($content, $ext): FileModel
+    public function handleFile($content,$ext): FileModel
     {
         $name = uniqid();
         $tempDir = $this->uploadDir . 'temp'.DS . $name.DS  ;
@@ -134,7 +129,7 @@ class UploadHandler
 
         file_put_contents($filepath, $content);
 
-        return $this->finalFile($filename, $tempDir, $filepath, $name, $ext);
+        return $this->finalFile($filename,$tempDir,$filepath,$name,$ext);
 
     }
 
@@ -142,7 +137,7 @@ class UploadHandler
      * Merges all chunks into a single file.
      * @throws UploadException
      */
-    private function mergeChunks(string $tempDir, string $finalFileName, int $total): string
+    private function mergeChunks(string $tempDir, string $finalFileName,int $total): string
     {
         $finalFilePath = $tempDir . $finalFileName;
         $outputFile = fopen($finalFilePath, 'wb');
@@ -166,7 +161,7 @@ class UploadHandler
     public function cleanUpUseLessTempDir(): void
     {
         $tempDir = $this->uploadDir . 'temp'.DS;
-        if (!is_dir($tempDir)) {
+        if(!is_dir($tempDir)){
             return;
         }
         $expiryHours = 24;
@@ -197,11 +192,11 @@ class UploadHandler
         rmdir($tempDir);
     }
 
+
     /**
      * @throws UploadException
      */
-    private function handleFileUploadError($errorCode)
-    {
+    private function handleFileUploadError($errorCode) {
         throw match ($errorCode) {
             UPLOAD_ERR_INI_SIZE => new UploadException('上传的文件超过了 php.ini 中 upload_max_filesize 选项限制的值'),
             UPLOAD_ERR_FORM_SIZE => new UploadException('上传的文件超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值'),
