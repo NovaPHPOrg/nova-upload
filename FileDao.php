@@ -113,4 +113,11 @@ class FileDao extends Dao
         //  Logger::info(print_r(debug_backtrace(),true));
         $this->delete()->where(['is_temp' => true, "create_time < " . $timeouts])->commit();
     }
+
+    public function getAbsolutePath($name): ?string
+    {
+        $name = preg_replace('/^(\d{4})(\d{2})(\d{2})-/', '$1/$2/$3/', $name);
+        $file = ROOT_PATH . '/uploads/' . $name;
+        return $file;
+    }
 }
