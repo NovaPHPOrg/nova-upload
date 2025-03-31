@@ -8,6 +8,8 @@ use nova\framework\core\Context;
 use nova\framework\core\File;
 use nova\framework\core\Logger;
 
+use function nova\framework\throttle;
+
 class UploadHandler
 {
     private string $uploadDir;
@@ -21,8 +23,10 @@ class UploadHandler
         $this->maxFileSize = $maxFileSize;
 
         File::mkDir($this->uploadDir);
+        throttle("useless_cleanup", 300, function () {
+            $this->cleanUpUseLessTempDir();
+        });
 
-        $this->cleanUpUseLessTempDir();
     }
 
     /**
