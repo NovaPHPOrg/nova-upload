@@ -103,7 +103,7 @@ class FileDao extends Dao
 
     public function removeTempFiles(): void
     {
-        $timeouts = time() - 3600 * 12;//- 3600 * 12;// 12 hour
+        $timeouts = time() - 3600 * 24 * 30;//- 3600 * 12;// 12 hour
         $files = $this->getAll(null, ['is_temp' => true,"create_time < ".$timeouts]);
         /** @var FileModel $file */
         foreach ($files["data"] as $file) {
