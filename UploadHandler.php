@@ -23,10 +23,9 @@ class UploadHandler
         $this->maxFileSize = $maxFileSize;
 
         File::mkDir($this->uploadDir);
-        throttle("useless_cleanup", 300, function () {
+        if(rand(1,100) === 1){
             $this->cleanUpUseLessTempDir();
-        });
-
+        }
     }
 
     /**
@@ -45,9 +44,13 @@ class UploadHandler
         Logger::info('totalChunks: ' . $totalChunks);
         Logger::info('fileName: ' . $fileName);
 
+        $uploadFile = $request->file($fileName);
+        if(!$uploadFile) {
+            $this->handleFileUploadError(0);
+        }
         // Check if file was uploaded without errors
-        if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-            $this->handleFileUploadError($_FILES['file']['error']);
+        if ($uploadFile->error!== UPLOAD_ERR_OK) {
+            $this->handleFileUploadError($uploadFile->error);
         }
 
         // Validate file type
@@ -56,7 +59,7 @@ class UploadHandler
         }
 
         // Check file size
-        if ($this->maxFileSize > 0 && $_FILES['file']['size'] > $this->maxFileSize) {
+        if ($this->maxFileSize > 0 && $uploadFile->size > $this->maxFileSize) {
             throw new UploadException('文件过大');
         }
 
@@ -72,7 +75,7 @@ class UploadHandler
 
         // Store the current chunk
         $chunkPath = $tempDir . $chunkIndex;
-        copy($_FILES['file']['tmp_name'], $chunkPath);
+        copy($uploadFile->tmp_name, $chunkPath);
         Logger::info("Chunk saved: $chunkPath");
         // Check if all chunks are uploaded
         if ($chunkIndex + 1 === $totalChunks) {
