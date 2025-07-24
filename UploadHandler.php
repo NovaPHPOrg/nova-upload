@@ -8,8 +8,6 @@ use nova\framework\core\Context;
 use nova\framework\core\File;
 use nova\framework\core\Logger;
 
-use function nova\framework\throttle;
-
 class UploadHandler
 {
     private string $uploadDir;
@@ -23,7 +21,7 @@ class UploadHandler
         $this->maxFileSize = $maxFileSize;
 
         File::mkDir($this->uploadDir);
-        if(rand(1,100) === 1){
+        if (rand(1, 100) === 1) {
             $this->cleanUpUseLessTempDir();
         }
     }
@@ -44,12 +42,12 @@ class UploadHandler
         Logger::info('totalChunks: ' . $totalChunks);
         Logger::info('fileName: ' . $fileName);
 
-        $uploadFile = $request->file($fileName);
-        if(!$uploadFile) {
+        $uploadFile = $request->file('file');
+        if (!$uploadFile) {
             $this->handleFileUploadError(0);
         }
         // Check if file was uploaded without errors
-        if ($uploadFile->error!== UPLOAD_ERR_OK) {
+        if ($uploadFile->error !== UPLOAD_ERR_OK) {
             $this->handleFileUploadError($uploadFile->error);
         }
 
