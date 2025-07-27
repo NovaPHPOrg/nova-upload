@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace nova\plugin\upload;
@@ -8,7 +9,7 @@ use nova\framework\http\Response;
 
 class UploadController
 {
-    public static function upload(Request $request,array $allowedTypes = ["images" =>['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff']]): Response
+    public static function upload(Request $request, array $allowedTypes = ["images" => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff']]): Response
     {
         $uploadDir = ROOT_PATH.DS."uploads".DS;
         $types = [];
@@ -39,7 +40,7 @@ class UploadController
             return Response::asJson(["code" => 400,"msg" => $e->getMessage()]);
         }
     }
-    public static function delete($name,$link_id): Response
+    public static function delete($name, $link_id): Response
     {
         $file = FileDao::getInstance()->getFile($name);
         if ($file->link_id != $link_id) {
