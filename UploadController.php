@@ -39,7 +39,7 @@ class UploadController
             return Response::asJson(["code" => 400,"msg" => $e->getMessage()]);
         }
     }
-    public function delete($name,$link_id): Response
+    public static function delete($name,$link_id): Response
     {
         $file = FileDao::getInstance()->getFile($name);
         if ($file->link_id != $link_id) {
@@ -49,7 +49,7 @@ class UploadController
         return Response::asJson(["code" => 200,"msg" => "删除成功"]);
     }
 
-    public function file(string $name): Response
+    public static function file(string $name): Response
     {
         $name = preg_replace('/^(\d{4})(\d{2})(\d{2})-/', '$1/$2/$3/', $name);
         $file = ROOT_PATH . '/uploads/' . $name;
