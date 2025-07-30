@@ -42,7 +42,7 @@ class UploadHandler
         Logger::info('totalChunks: ' . $totalChunks);
         Logger::info('fileName: ' . $fileName);
 
-        $uploadFile = $request->file($fileName);
+        $uploadFile = $request->file('file');
         if (!$uploadFile) {
             $this->handleFileUploadError(0);
         }
