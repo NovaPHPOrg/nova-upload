@@ -64,7 +64,7 @@ class UploadController
     public function delete($name, $link_id): Response
     {
         $file = FileDao::getInstance($this->tableName)->getFile($name);
-        if ($file->link_id != $link_id) {
+        if ($file && $file->link_id != $link_id) {
             return Response::asJson(["code" => 403, "msg" => "禁止删除"]);
         }
         FileDao::getInstance()->removeFile($name);
