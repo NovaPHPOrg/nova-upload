@@ -25,7 +25,7 @@ class UploadController
     public static function getInstance(string $uploadDir = null): self
     {
         if (self::$defaultInstance === null || $uploadDir !== null) {
-            self::$defaultInstance = new self($uploadDir);
+            self::$defaultInstance = new self($uploadDir,'');
         }
         return self::$defaultInstance;
     }
