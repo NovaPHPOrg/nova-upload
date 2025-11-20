@@ -73,12 +73,18 @@ class UploadController
 
     public function file(string $name): Response
     {
-        $name = preg_replace('/^(\d{4})(\d{2})(\d{2})-/', '$1/$2/$3/', $name);
-        $file = rtrim($this->uploadDir, DS) . DS . $name;
+        $file = $this->dir($name);
         if (file_exists($file) && is_file($file)) {
             return Response::asStatic($file);
         }
         return Response::asText("404 not found");
+    }
+
+    public function dir(string $name): string
+    {
+        $name = preg_replace('/^(\d{4})(\d{2})(\d{2})-/', '$1/$2/$3/', $name);
+        $file = rtrim($this->uploadDir, DS) . DS . $name;
+        return $file;
     }
 
     public function useFile(string $name,string $link_id): void
