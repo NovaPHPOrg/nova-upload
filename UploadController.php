@@ -14,7 +14,7 @@ class UploadController
     private string $tableName;
     private static ?self $defaultInstance = null;
 
-    public function __construct(string $uploadDir = null,string $tableName = null)
+    public function __construct(string $uploadDir = null, string $tableName = null)
     {
         $this->uploadDir = $uploadDir ?? ROOT_PATH . DS . "uploads" . DS;
         $this->tableName = $tableName;
@@ -25,7 +25,7 @@ class UploadController
     public static function getInstance(string $uploadDir = null): self
     {
         if (self::$defaultInstance === null || $uploadDir !== null) {
-            self::$defaultInstance = new self($uploadDir,'');
+            self::$defaultInstance = new self($uploadDir, '');
         }
         return self::$defaultInstance;
     }
@@ -87,19 +87,19 @@ class UploadController
         return $file;
     }
 
-    public function useFile(string $name,string $link_id): void
+    public function useFile(string $name, string $link_id): void
     {
-        FileDao::getInstance($this->tableName)->useFile($name,$link_id);
+        FileDao::getInstance($this->tableName)->useFile($name, $link_id);
     }
 
-    public function useMarkdownFile(string $name,string $link_id): void
+    public function useMarkdownFile(string $name, string $link_id): void
     {
-        FileDao::getInstance($this->tableName)->useMarkdownFile($name,$link_id);
+        FileDao::getInstance($this->tableName)->useMarkdownFile($name, $link_id);
     }
 
-    public function useHtmlFile(string $name,string $link_id): void
+    public function useHtmlFile(string $name, string $link_id): void
     {
-        FileDao::getInstance($this->tableName)->useHtmlFile($name,$link_id);
+        FileDao::getInstance($this->tableName)->useHtmlFile($name, $link_id);
     }
 
     public function getUploadDir(): string
