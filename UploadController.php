@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace nova\plugin\upload;
 
 use nova\framework\core\File;
+use nova\framework\core\Instance;
 use nova\framework\http\Request;
 use nova\framework\http\Response;
 
-class UploadController
+class UploadController extends Instance
 {
     private string $uploadDir;
     private string $tableName;
-    private static ?self $defaultInstance = null;
 
-    public function __construct(string $uploadDir = null, string $tableName = null)
+    public function __construct(string $uploadDir = null, string $tableName = '')
     {
         $this->uploadDir = $uploadDir ?? ROOT_PATH . DS . "uploads" . DS;
         $this->tableName = $tableName;
@@ -22,13 +22,6 @@ class UploadController
         File::mkDir($this->uploadDir);
     }
 
-    public static function getInstance(string $uploadDir = null): self
-    {
-        if (self::$defaultInstance === null || $uploadDir !== null) {
-            self::$defaultInstance = new self($uploadDir, '');
-        }
-        return self::$defaultInstance;
-    }
 
     public function upload(Request $request, array $allowedTypes = ["images" => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff']]): Response
     {
