@@ -22,7 +22,6 @@ class UploadController extends Instance
         File::mkDir($this->uploadDir);
     }
 
-
     public function upload(Request $request, array $allowedTypes = ["images" => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff']]): Response
     {
         $types = [];
