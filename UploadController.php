@@ -22,8 +22,15 @@ class UploadController extends Instance
         File::mkDir($this->uploadDir);
     }
 
-    public function upload(Request $request, array $allowedTypes = ["images" => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff']]): Response
-    {
+    /**
+     * @param array $allowedTypes 允许的扩展名分组，如 ['images' => ['png','jpg']]
+     * @param callable|null $onSuccess 上传完成回调，签名：function(FileModel $file): void
+     */
+    public function upload(
+        Request $request,
+        array $allowedTypes = ["images" => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff']],
+        ?callable $onSuccess = null
+    ): Response {
         $types = [];
         foreach ($allowedTypes as $type => $exts) {
             $types = array_merge($types, $exts);
@@ -44,6 +51,10 @@ class UploadController extends Instance
                 $upload->cleanUpUseLessTempDir();
                 FileDao::getInstance($this->tableName)->insertModel($result);
                 FileDao::getInstance($this->tableName)->removeTempFiles();
+
+                if ($onSuccess !== null) {
+                    $onSuccess($result);
+                }
 
                 return Response::asJson(["code" => 200, "msg" => "上传成功", "data" => $result->uri_name]);
             }
