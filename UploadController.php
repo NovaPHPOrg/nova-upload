@@ -23,8 +23,8 @@ class UploadController extends Instance
     }
 
     /**
-     * @param array $allowedTypes 允许的扩展名分组，如 ['images' => ['png','jpg']]
-     * @param callable|null $onSuccess 上传完成回调，签名：function(FileModel $file): void
+     * @param array         $allowedTypes 允许的扩展名分组，如 ['images' => ['png','jpg']]
+     * @param callable|null $onSuccess    上传完成回调，签名：function(FileModel $file): void
      */
     public function upload(
         Request $request,
